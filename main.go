@@ -10,6 +10,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/alexsnet/s3sync/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -165,6 +166,7 @@ func getAWSSession(sourceUri string) (*session.Session, string, error) {
 
 func main() {
 	app := &cli.App{
+		Version: util.Version(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "paths",
@@ -205,6 +207,7 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+
 			r, err := openReader(ctx.String("paths"))
 			if err != nil {
 				return cli.Exit("There is no file to read", 86)
