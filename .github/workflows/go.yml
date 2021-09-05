@@ -27,11 +27,17 @@ jobs:
       - name: Set BUILD_TIME env
         run: echo BUILD_TIME=$(date -u +%Y%m%d-%H%M) >> ${GITHUB_ENV}
       
+      - name: Wait for the deletion
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
+
       - uses: wangyoucao577/go-release-action@v1.20
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
+          release_tag: dev
           overwrite: true
           ldflags: -extldflags -static -X github.com/alexsnet/s3sync/util.COMMIT=${{github.sha}} -X github.com/alexsnet/s3sync/util.BUILD_TIME=${{ env.BUILD_TIME }}
           pre_command: export CGO_ENABLED=0
