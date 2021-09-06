@@ -3,7 +3,7 @@ name: Go
 on:
    release:
      types: [created]
-     
+
 jobs:
   releases-matrix:
     name: Compile binaries
@@ -41,4 +41,4 @@ jobs:
           project_path: "."
           binary_name: "s3sync"
           extra_files: LICENSE README.md
-          asset_name: "s3sync-${{ env.BUILD_TIME }}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          asset_name: "s3sync-${{ matrix.goos }}-${{ matrix.goarch }}"

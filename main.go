@@ -157,6 +157,8 @@ func getAWSSession(sourceUri string) (*session.Session, string, error) {
 
 	if region := uri.Query().Get("region"); len(region) > 0 {
 		config = config.WithRegion(region)
+	} else {
+		config = config.WithRegion("us-east-1")
 	}
 
 	sess := session.Must(session.NewSession(config))
