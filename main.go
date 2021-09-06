@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/alexsnet/s3sync/util"
@@ -280,17 +281,55 @@ func main() {
 					objectTags = v.Encode()
 				}
 
+				var body io.ReadSeekCloser
+				var contentLength int64
+				if result.ContentLength == nil {
+					file, err := os.CreateTemp(os.TempDir(), "transfer.*.s3")
+					if err != nil {
+						logrus.WithField("file", line).WithError(err).Error("can not create temporary file")
+						return
+					}
+					defer os.Remove(file.Name())
+
+					logrus.WithField("file", line).WithField("tmp", file.Name()).Info("No ContentLength -> readyng file to ram")
+
+					n, err := io.Copy(file, result.Body)
+					if err != nil {
+						logrus.WithField("file", line).WithError(err).Error("can not read file from source")
+					}
+
+					body = file
+					contentLength = n
+					result.Body.Close()
+				} else {
+					body = aws.ReadSeekCloser(result.Body)
+					contentLength = *result.ContentLength
+				}
+
 				destSession := s3.New(asd)
+				// {
+				// 	bo, err := destSession.ListBuckets(&s3.ListBucketsInput{})
+				// 	if err != nil {
+				// 		panic(err)
+				// 	}
+				// 	for _, b := range bo.Buckets {
+				// 		pp.Println(b.Name, b.CreationDate)
+				// 	}
+				// }
+				if !strings.HasPrefix(line, "/") {
+					line = "/" + line
+				}
+				_ = contentLength
 				pi := &s3.PutObjectInput{
-					Body:            aws.ReadSeekCloser(result.Body),
-					Bucket:          aws.String(db),
-					Key:             aws.String(line),
-					ACL:             aws.String(defaultPutACL),
-					ContentType:     result.ContentType,
-					ContentEncoding: result.ContentEncoding,
-					ContentLength:   result.ContentLength,
-					Metadata:        result.Metadata,
-					Tagging:         aws.String(objectTags),
+					Body:        body,
+					Bucket:      aws.String(db),
+					Key:         aws.String(line),
+					ACL:         aws.String(defaultPutACL),
+					ContentType: result.ContentType,
+					// ContentEncoding: result.ContentEncoding,
+					// ContentLength: aws.Int64(contentLength),
+					// Metadata:      result.Metadata,
+					Tagging: aws.String(objectTags),
 				}
 				dresult, err := destSession.PutObject(pi)
 				if err != nil {

@@ -5,6 +5,8 @@ go 1.16
 require (
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
+	github.com/k0kubun/pp v3.0.1+incompatible
+	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0
