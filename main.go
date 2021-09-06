@@ -161,6 +161,10 @@ func getAWSSession(sourceUri string) (*session.Session, string, error) {
 		config = config.WithRegion("us-east-1")
 	}
 
+	if uri.Query().Has("path-style") {
+		config = config.WithS3ForcePathStyle(true)
+	}
+
 	sess := session.Must(session.NewSession(config))
 
 	return sess, uri.Path[1:], err
