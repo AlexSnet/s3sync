@@ -188,6 +188,17 @@ func main() {
 				Value:   runtime.NumCPU(),
 			},
 
+			&cli.StringFlag{
+				Name:  "log",
+				Usage: "Set log file to write to",
+				Value: "-",
+			},
+			&cli.StringFlag{
+				Name:  "logformat",
+				Usage: "Set logging format: text or json",
+				Value: "text",
+			},
+
 			&cli.BoolFlag{
 				Name:  "mv",
 				Usage: "Delete object in source after transfer to destination",
@@ -228,6 +239,23 @@ func main() {
 			asd, db, err := getAWSSession(ctx.String("dst"))
 			if err != nil {
 				cli.Exit("Can not configure client for destination", 92)
+			}
+
+			lf := ctx.String("log")
+			if lf != "-" {
+				f, err := os.OpenFile(lf, os.O_WRONLY|os.O_CREATE, 0755)
+				if err != nil {
+					logrus.WithError(err).Fatal("can not open file for logging")
+				}
+				defer f.Close()
+				logrus.SetOutput(f)
+			}
+
+			switch ctx.String("logformat") {
+			case "json":
+				logrus.SetFormatter(&logrus.JSONFormatter{})
+			default:
+				logrus.SetFormatter(&logrus.TextFormatter{})
 			}
 
 			// mcs, sb, err := getMC(ctx.String("src"))
